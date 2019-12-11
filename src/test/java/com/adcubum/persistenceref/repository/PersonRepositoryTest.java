@@ -8,6 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import java.util.Collections;
 
 @SpringBootTest
@@ -17,6 +19,9 @@ public class PersonRepositoryTest {
 
    @Autowired
    private PersonRepository personRepository;
+
+   @Autowired
+   private EntityManager entityManager;
 
    @Test
    public void test() {
@@ -32,7 +37,12 @@ public class PersonRepositoryTest {
       savedPerson.name = "changedName";
 
       Person loadedPerson = personRepository.findById(savedPerson.id).get();
-      System.out.println();
    }
 
+   @Test
+   public void testOptimisticLocking() {
+      Iterable<Person> allPeople = personRepository.findAll();
+      Person person = allPeople.iterator().next();
+      entityManager.lock(person, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+   }
 }
